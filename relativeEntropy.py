@@ -49,14 +49,15 @@ print('Calculating Relative Entropy')
 relEntropy = 0
 entropyDict = {}
 for char in freqDict.keys():
+    inputRatio = float(inputBuffer.count(char)) / float(len(inputBuffer))
     ratioTerm = np.divide(float(inputBuffer.count(char)), float(freqDict[char]))
     if (ratioTerm != 0.0):
-        entropyTerm = np.multiply(float(freqDict[char]), \
-            np.log2(float(inputBuffer.count(char)) / float(freqDict[char])))
+        entropyTerm = np.multiply(inputRatio, \
+            np.log2(inputRatio / float(freqDict[char])))
         entropyDict[str(char)] = float(entropyTerm)
     else:
         entropyDict[str(char)] = 0.0
         entropyTerm = 0
     relEntropy += entropyTerm
 
-print('Relative Entropy: ' + relEntropy)
+print('Relative Entropy: ' + str(relEntropy))
