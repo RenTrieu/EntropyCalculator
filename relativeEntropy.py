@@ -8,12 +8,12 @@
 import sys
 import json
 import numpy as np
+import matplotlib
 
 # Usage Handling
 if (len(sys.argv) != 3):
     print('Usage: ' + str(sys.argv[0]) + ' [Input File] [Frequency Distribution]')
     sys.exit(1)
-
 
 inputFile = str(sys.argv[1])
 distFile = str(sys.argv[2])
@@ -45,6 +45,7 @@ else:
 # And calculates the relative entropy term corresponding to the character
 # Then adds the term to the total sum
 
+print('Calculating Relative Entropy')
 relEntropy = 0
 entropyDict = {}
 for char in freqDict.keys():
@@ -58,5 +59,4 @@ for char in freqDict.keys():
         entropyTerm = 0
     relEntropy += entropyTerm
 
-print(entropyDict)
-print(relEntropy)
+print('Relative Entropy: ' + relEntropy)
