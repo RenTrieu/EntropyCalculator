@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # Program: EntropyCalculator 
 # Author: Darren Trieu Nguyen
-# Version: 0.2
+# Version: 1.0
 # Function: Takes in an arbitrary character frequency distribution to
 #           calculate the entropy of a given file
 
+import os
 import sys
 import json
 import numpy as np
@@ -20,7 +21,7 @@ class EntropyCalculator:
     """
     def __init__(self):
         if __name__ == '__main__':
-            version = 0.2
+            version = 1.0
 
             # Parsing the CLI for options and parameters
             parser = argparse.ArgumentParser(
@@ -33,17 +34,19 @@ class EntropyCalculator:
                                 help='The file containing the' \
                                 ' distribution to be used as the baseline for' \
                                 ' the relative entropy calculation')
-            parser.add_argument('-v', '--verbose',
-                                help='Increases output verbosity', \
-                                action='store_true')
             parser.add_argument('--log', nargs='?', default='WARNING',
                                 help='Controls logging verbosity based off of'\
                                 ' log message priority. Levels include:'\
                                 'DEBUG, INFO, WARNING, ERROR, CRITICAL')
-            # TODO: Give user the ability to specify an output file/directory
-            # TODO: Give user the ability to output a file containing
-            #       character distributions in the form of a serialized 
-            #       dictionary
+            parser.add_argument('--outDirectory', nargs='?', default=None,
+                                help='Specifies a directory (relative path)' \
+                                ' to which all serialized dictionary files' \
+                                ' will be output')
+            parser.add_argument('-d', '--dictionary',
+                                help='If specified, will serialize a' \
+                                ' dictionary containing the probability' \
+                                ' distribution as a .json file',
+                                action='store_true')
 
             args = parser.parse_args()
 
@@ -68,18 +71,58 @@ class EntropyCalculator:
             for inputFile in args.inputFiles:
                 self.logger.info('Analyzing ' + str(inputFile))
 
-                # If baseline is specified, runs the Relative Entropy 
+                # If --baseline is specified, runs the Relative Entropy 
                 # calculation
                 if (args.baseline is not None):
                     inputBuffer, freqDict = self.parse(inputFile, args.baseline)
-                    relEntropy = self.calcRelEntropy(inputBuffer, freqDict)
+                    relEntropy, probDict = self.calcRelEntropy(inputBuffer, freqDict)
                     print('Relative Entropy of ' + str(inputFile) \
                           + ': ' + str(relEntropy))
                 else:
                     inputBuffer = self.parse(inputFile)
-                    shanEntropy = self.calcShanEntropy(inputBuffer)
+                    shanEntropy, probDict = self.calcShanEntropy(inputBuffer)
                     print('Shannon Entropy of ' + str(inputFile) \
                           + ': ' + str(shanEntropy))
+            
+                # If --dictionary is specified, serializes a dictionary
+                # containing the probability distribution as a .json file.
+                if ((args.dictionary is True) \
+                      and (args.outDirectory is None)):
+
+                    # Setting up output path
+                    outFile = os.path.split(inputFile)[1]
+                    outFile = outFile.split('.')[0] + '.json'
+                    outDirectory = os.path.join(os.getcwd(), outFile)
+
+                    print('Outputting Dictionary to ' + str(outDirectory))
+                    json_object = json.dumps(probDict, indent=2)
+                    with open(outDirectory, 'w') as jFile:
+                        jFile.write(json_object)
+
+                # Outputs to args.outDirectory if specified.
+                elif ((args.dictionary is True) \
+                    and (args.outDirectory is not None)):
+
+                    # Obtaining the path for the outDirectory
+                    outDirectory = os.path.normpath(args.outDirectory)
+                    outDirectory = os.path.join(os.getcwd(), outDirectory)
+
+                    # Setting up outfile name
+                    outFile = os.path.split(inputFile)[1]
+                    outFile = outFile.split('.')[0] + '.json'
+
+                    # Creating the outDirectory if it does not already exist
+                    if not os.path.isdir(outDirectory):
+                        os.mkdir(outDirectory)
+
+                    # Adding inputFile to the output path
+                    outDirectory = os.path.join(outDirectory, outFile)
+
+                    print('Outputting Dictionary to ' + str(outDirectory))
+                    json_object = json.dumps(probDict, indent=2)
+                    with open(outDirectory, 'w') as jFile:
+                        jFile.write(json_object)
+
 
         # When called from another script
         else:
@@ -138,7 +181,7 @@ class EntropyCalculator:
         self.logger.info('Calculating Relative Entropy.')
 
         relEntropy = 0
-        entropyDict = {}
+        probDict = {}
 
         # Calculating the entropy term for each unique character
         for char in freqDict.keys():
@@ -155,19 +198,19 @@ class EntropyCalculator:
             if (ratioTerm != 0.0):
                 entropyTerm = np.multiply(inputRatio, \
                     np.log2(inputRatio / float(freqDict[char])))
-                entropyDict[str(char)] = float(entropyTerm)
+                probDict[str(char)] = float(inputRatio)
 
             # Handling cases where the unique character does not have a nonzero
             # number of occurrences
             else:
                 entropyTerm = 0
-                entropyDict[str(char)] = 0.0
+                probDict[str(char)] = 0.0
 
             # Summing the entropyTerm to the total Entropy
             relEntropy += entropyTerm
 
         self.logger.info('Relative Entropy: ' + str(relEntropy))
-        return relEntropy
+        return relEntropy, probDict
 
     """ Calculates the Shannon Entropy for the given inputBuffer
     """
@@ -178,7 +221,7 @@ class EntropyCalculator:
         charList = sorted(list(set(inputBuffer)))
 
         shanEntropy = 0
-        entropyDict = {}
+        probDict = {}
 
         # Calculating the entropy term for each unique character
         for char in charList:
@@ -190,14 +233,14 @@ class EntropyCalculator:
             # Calculating the full entropy term
             if (inputRatio != 0.0):
                 entropyTerm = -np.multiply(inputRatio, np.log2(inputRatio))
-                entropyDict[str(char)] = float(entropyTerm)
+                probDict[str(char)] = float(inputRatio)
                 shanEntropy += entropyTerm
             else:
                 entropyTerm = 0
-                entropyDict[str(char)] = 0.0
+                probDict[str(char)] = 0.0
 
         self.logger.info('Shannon Entropy: ' + str(shanEntropy))
-        return shanEntropy
+        return shanEntropy, probDict
 
 
 entCalc = EntropyCalculator()
