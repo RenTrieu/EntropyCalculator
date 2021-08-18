@@ -15,7 +15,7 @@ numpy>=1.21.2
 
 ## Uses the Relative Entropy Formula
 
-Relative Entropy was calculated via the following formula:
+Relative Entropy was calculated via the Kullback-Leibler divergence formula.
 
 ![equation](https://latex.codecogs.com/gif.latex?D_%7BKL%7D%28P_%7B%7C%7C%7DQ%29%3D%5Csum_%7Bi%7Dp_%7Bi%7Dlog%5Cleft%28%5Cfrac%7Bp_%7Bi%7D%7D%7Bq_%7Bi%7D%7D%5Cright%29)
 
@@ -24,3 +24,10 @@ proportion of the given character relative to the entire input distribution
 and ![equation](https://latex.codecogs.com/gif.latex?q_%7Bi%7D) 
 is the proportion from the baseline distribution.
 
+## Example Files
+``ExampleFiles`` contains example text files to run the script on.
+``DistributionFiles`` contains an example character frequency distribution file.
+
+## Sources
+Built using Ben Downing's [Entropy Article](https://redcanary.com/blog/threat-hunting-entropy/)
+as a reference and for the example baseline distribution.
