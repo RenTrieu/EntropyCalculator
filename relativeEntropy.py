@@ -13,7 +13,6 @@ import logging
 
 """ Class that houses RelativeEntropy 
 """
-
 class RelativeEntropy:
 
     """ Initialization function
@@ -27,12 +26,12 @@ class RelativeEntropy:
             parser = argparse.ArgumentParser(
                 description='Analyzes relative entropy of a given file'
             )
-            # TODO: Add ability for script to handle multiple input files
-            parser.add_argument('inputFile', metavar='inputFile', nargs='+',
+            parser.add_argument('inputFiles', metavar='inputFiles', nargs='+',
                                 help='Input files for which to calculate' \
                                 ' entropy')
             # TODO: Add to documentation how baseline files should be formatted
-            parser.add_argument('--baseline', help='The file containing the' \
+            parser.add_argument('-b', '--baseline', default=argparse.SUPPRESS,
+                                help='The file containing the' \
                                 ' distribution to be used as the baseline for' \
                                 ' the relative entropy calculation')
             parser.add_argument('-v', '--verbose',
@@ -42,7 +41,10 @@ class RelativeEntropy:
                                 help='Controls logging verbosity based off of'\
                                 ' log message priority. Levels include:'\
                                 'DEBUG, INFO, WARNING, ERROR, CRITICAL')
-            # TODO: Give user the ability to specify and output file/directory
+            # TODO: Give user the ability to specify an output file/directory
+            # TODO: Give user the ability to output a file containing
+            #       character distributions in the form of a serialized 
+            #       dictionary
 
             args = parser.parse_args()
 
@@ -51,7 +53,8 @@ class RelativeEntropy:
             logFile = None
 
             # Initializing logging
-            logger = logging.getLogger(self.__class__.__name__)
+            self.logger = logging.getLogger(self.__class__.__name__)
+
 
             numeric_level = getattr(logging, logLevel.upper(), None)
             if not isinstance(numeric_level, int):
@@ -63,6 +66,13 @@ class RelativeEntropy:
                 logging.basicConfig(level=numeric_level)
 
             #TODO: Script should call main function here
+            for inputFile in args.inputFiles:
+                self.logger.info('Analyzing ' + str(inputFile))
+                inputBuffer, freqDict = self.parse(inputFile, args.baseline)
+                relEntropy = self.calcRelEntropy(inputBuffer, freqDict)
+                print('Relative Entropy of ' + str(inputFile) \
+                      + ': ' + str(relEntropy))
+
         # When called from another script
         else:
             # Initializing logging
@@ -80,54 +90,65 @@ class RelativeEntropy:
                                         + str(self.__class__.__name__))
             self.logger = logger
 
-# Usage Handling
-if (len(sys.argv) != 3):
-    print('Usage: ' + str(sys.argv[0]) + ' [Input File] [Frequency Distribution]')
-    sys.exit(1)
+    """ Parsing function
+        Takes in the input file and parses them
+    """
+    def parse(self, inputFile, distFile):
+        
+        # Reading the Input File
+        inputBuffer = None
+        with open(str(inputFile), 'r') as inputF:
+            inputBuffer = inputF.read()
 
-inputFile = str(sys.argv[1])
-distFile = str(sys.argv[2])
+        if (inputBuffer is not None):
+            self.logger.info('Input file successfully read.')
+        else:
+            self.logger.critical('Failed to read input file. Exiting.')
+            sys.exit(2)
 
-# Reading the Input File
-inputBuffer = None
-with open(str(inputFile), 'r') as inputF:
-    inputBuffer = inputF.read()
+        # Reading the Dist File into a dictionary
+        freqDict = None
+        with open(str(distFile), 'r') as distF:
+            freqDict = json.load(distF)
 
-if (inputBuffer is not None):
-    print('Input file successfully read.')
-else:
-    print('Failed to read input file. Exiting.')
-    sys.exit(2)
+        if (freqDict is not None):
+            self.logger.info('Distribution file successfully read.')
+        else:
+            self.logger.critical('Failed to read distribution file. Exiting.')
+            sys.exit(3)
+            # TODO: Add exit codes and meanings to documentation
+        return inputBuffer, freqDict
 
-# Reading the Dist File into a dictionary
-freqDict = None
-with open(str(distFile), 'r') as distF:
-    freqDict = json.load(distF)
+    """ Count the number of occurrences of a given character in the input file for
+        every character listed in freqDict
+        And calculates the relative entropy term corresponding to the character
+        Then adds the term to the total sum
+    """
+    def calcRelEntropy(self, inputBuffer, freqDict):
+        self.logger.info('Calculating Relative Entropy.')
 
-if (freqDict is not None):
-    print('Distribution file successfully read.')
-else:
-    print('Failed to read distribution file. Exiting.')
-    sys.exit(3)
+        relEntropy = 0
+        entropyDict = {}
+        for char in freqDict.keys():
+            inputRatio = float(inputBuffer.count(char)) \
+                         / float(len(inputBuffer))
+            ratioTerm = np.divide(float(inputBuffer.count(char)), \
+                        float(freqDict[char]))
+            if (ratioTerm != 0.0):
+                entropyTerm = np.multiply(inputRatio, \
+                    np.log2(inputRatio / float(freqDict[char])))
+                entropyDict[str(char)] = float(entropyTerm)
+            else:
+                entropyDict[str(char)] = 0.0
+                entropyTerm = 0
+            relEntropy += entropyTerm
 
-# Count the number of occurrences of a given character in the input file for
-# every character listed in freqDict
-# And calculates the relative entropy term corresponding to the character
-# Then adds the term to the total sum
+        self.logger.info('Relative Entropy: ' + str(relEntropy))
+        return relEntropy
 
-print('Calculating Relative Entropy')
-relEntropy = 0
-entropyDict = {}
-for char in freqDict.keys():
-    inputRatio = float(inputBuffer.count(char)) / float(len(inputBuffer))
-    ratioTerm = np.divide(float(inputBuffer.count(char)), float(freqDict[char]))
-    if (ratioTerm != 0.0):
-        entropyTerm = np.multiply(inputRatio, \
-            np.log2(inputRatio / float(freqDict[char])))
-        entropyDict[str(char)] = float(entropyTerm)
-    else:
-        entropyDict[str(char)] = 0.0
-        entropyTerm = 0
-    relEntropy += entropyTerm
+    """ Calculates the Shannon Entropy for 
+    """
+    def calcShanEntropy(self, inputBuffer):
+        self.logger.info('Calculating Shannon Entropy.')
 
-print('Relative Entropy: ' + str(relEntropy))
+relEntropy = RelativeEntropy()
