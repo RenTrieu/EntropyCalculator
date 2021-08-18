@@ -1,13 +1,84 @@
 #!/usr/bin/env python3
 # Program: RelativeEntropy
 # Author: Darren Trieu Nguyen
-# Version: 0.1
+# Version: 0.2
 # Function: Takes in an arbitrary character frequency distribution to
 #           calculate the relative entropy of a given file
 
 import sys
 import json
 import numpy as np
+import argparse
+import logging
+
+""" Class that houses RelativeEntropy 
+"""
+
+class RelativeEntropy:
+
+    """ Initialization function
+        Handles options from the CLI
+    """
+    def __init__(self):
+        if __name__ == '__main__':
+            version = 0.2
+
+            # Parsing the CLI for options and parameters
+            parser = argparse.ArgumentParser(
+                description='Analyzes relative entropy of a given file'
+            )
+            # TODO: Add ability for script to handle multiple input files
+            parser.add_argument('inputFile', metavar='inputFile', nargs='+',
+                                help='Input files for which to calculate' \
+                                ' entropy')
+            # TODO: Add to documentation how baseline files should be formatted
+            parser.add_argument('--baseline', help='The file containing the' \
+                                ' distribution to be used as the baseline for' \
+                                ' the relative entropy calculation')
+            parser.add_argument('-v', '--verbose',
+                                help='Increases output verbosity', \
+                                action='store_true')
+            parser.add_argument('--log', nargs='?', default='WARNING',
+                                help='Controls logging verbosity based off of'\
+                                ' log message priority. Levels include:'\
+                                'DEBUG, INFO, WARNING, ERROR, CRITICAL')
+            # TODO: Give user the ability to specify and output file/directory
+
+            args = parser.parse_args()
+
+            # Initializing log file and log level
+            logLevel = args.log
+            logFile = None
+
+            # Initializing logging
+            logger = logging.getLogger(self.__class__.__name__)
+
+            numeric_level = getattr(logging, logLevel.upper(), None)
+            if not isinstance(numeric_level, int):
+                raise ValueError('Invalid log level: %s' % logLevel)
+            if logFile is not None:
+                logging.basicConfig(filename=logFile, filemode='w', \
+                                    level=numeric_level)
+            else:
+                logging.basicConfig(level=numeric_level)
+
+            #TODO: Script should call main function here
+        # When called from another script
+        else:
+            # Initializing logging
+            frame = inspect.currentframe().f_back
+            try:
+                try:
+                    self_obj = frame.f_locals['self']
+                    logName = type(self_obj).__name__
+                except KeyError:
+                    logName = self.__class__.__name__
+            finally:
+                del frame
+
+            logger = logging.getLogger(logName + '.' \
+                                        + str(self.__class__.__name__))
+            self.logger = logger
 
 # Usage Handling
 if (len(sys.argv) != 3):
