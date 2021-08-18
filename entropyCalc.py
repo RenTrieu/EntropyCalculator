@@ -11,6 +11,7 @@ import json
 import numpy as np
 import argparse
 import logging
+import re
 
 """ Class that houses EntropyCalculator
 """
@@ -148,7 +149,7 @@ class EntropyCalculator:
         
         # Reading the Input File
         inputBuffer = None
-        with open(str(inputFile), 'r') as inputF:
+        with open(inputFile, 'r') as inputF:
             inputBuffer = inputF.read()
 
         if (inputBuffer is not None):
@@ -157,7 +158,7 @@ class EntropyCalculator:
             self.logger.critical('Failed to read input file. Exiting.')
             sys.exit(1)
         if distFile is None:
-            return inputFile
+            return inputBuffer
 
         # Reading the Dist File into a dictionary
         freqDict = None
@@ -182,6 +183,14 @@ class EntropyCalculator:
 
         relEntropy = 0
         probDict = {}
+
+        # Removing characters not in freqDict from inputBuffer
+        bufferSet = set(inputBuffer)
+        freqSet = set(list(freqDict.keys()))
+        missingChars = list(bufferSet.difference(freqSet))
+
+        for missingChar in missingChars:
+            inputBuffer = inputBuffer.replace(str(missingChar), '')
 
         # Calculating the entropy term for each unique character
         for char in freqDict.keys():
