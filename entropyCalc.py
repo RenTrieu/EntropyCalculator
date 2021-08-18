@@ -145,8 +145,7 @@ class EntropyCalculator:
         # Calculating the entropy term for each unique character
         for char in freqDict.keys():
 
-            # Calculating the fraction of inputBuffer that is made up of
-            # the current unique character (p_i)
+            # Calculating the current unique character's probability p_i
             inputRatio = float(inputBuffer.count(char)) \
                          / float(len(inputBuffer))
 
@@ -186,8 +185,7 @@ class EntropyCalculator:
         # Calculating the entropy term for each unique character
         for char in charList:
 
-            # Calculating the fraction of inputBuffer that is made up of
-            # the current unique character (p_i)
+            # Calculating the current unique character's probability p_i
             inputRatio = float(inputBuffer.count(char)) \
                          / float(len(inputBuffer))
 
