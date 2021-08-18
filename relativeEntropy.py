@@ -8,7 +8,6 @@
 import sys
 import json
 import numpy as np
-import matplotlib
 
 # Usage Handling
 if (len(sys.argv) != 3):
