@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# Program: RelativeEntropy
+# Program: EntropyCalculator 
 # Author: Darren Trieu Nguyen
 # Version: 0.2
 # Function: Takes in an arbitrary character frequency distribution to
-#           calculate the relative entropy of a given file
+#           calculate the entropy of a given file
 
 import sys
 import json
@@ -11,9 +11,9 @@ import numpy as np
 import argparse
 import logging
 
-""" Class that houses RelativeEntropy 
+""" Class that houses EntropyCalculator
 """
-class RelativeEntropy:
+class EntropyCalculator:
 
     """ Initialization function
         Handles options from the CLI
@@ -30,7 +30,7 @@ class RelativeEntropy:
                                 help='Input files for which to calculate' \
                                 ' entropy')
             # TODO: Add to documentation how baseline files should be formatted
-            parser.add_argument('-b', '--baseline', default=argparse.SUPPRESS,
+            parser.add_argument('-b', '--baseline', default=None,
                                 help='The file containing the' \
                                 ' distribution to be used as the baseline for' \
                                 ' the relative entropy calculation')
@@ -65,13 +65,22 @@ class RelativeEntropy:
             else:
                 logging.basicConfig(level=numeric_level)
 
-            #TODO: Script should call main function here
+            # Feeding input files into entropy functions
             for inputFile in args.inputFiles:
                 self.logger.info('Analyzing ' + str(inputFile))
-                inputBuffer, freqDict = self.parse(inputFile, args.baseline)
-                relEntropy = self.calcRelEntropy(inputBuffer, freqDict)
-                print('Relative Entropy of ' + str(inputFile) \
-                      + ': ' + str(relEntropy))
+
+                # If baseline is specified, runs the Relative Entropy 
+                # calculation
+                if (args.baseline is not None):
+                    inputBuffer, freqDict = self.parse(inputFile, args.baseline)
+                    relEntropy = self.calcRelEntropy(inputBuffer, freqDict)
+                    print('Relative Entropy of ' + str(inputFile) \
+                          + ': ' + str(relEntropy))
+                else:
+                    inputBuffer = self.parse(inputFile)
+                    shanEntropy = self.calcShanEntropy(inputBuffer)
+                    print('Shannon Entropy of ' + str(inputFile) \
+                          + ': ' + str(shanEntropy))
 
         # When called from another script
         else:
@@ -93,7 +102,7 @@ class RelativeEntropy:
     """ Parsing function
         Takes in the input file and parses them
     """
-    def parse(self, inputFile, distFile):
+    def parse(self, inputFile, distFile=None):
         
         # Reading the Input File
         inputBuffer = None
@@ -105,6 +114,8 @@ class RelativeEntropy:
         else:
             self.logger.critical('Failed to read input file. Exiting.')
             sys.exit(2)
+        if distFile is None:
+            return inputFile
 
         # Reading the Dist File into a dictionary
         freqDict = None
@@ -117,6 +128,7 @@ class RelativeEntropy:
             self.logger.critical('Failed to read distribution file. Exiting.')
             sys.exit(3)
             # TODO: Add exit codes and meanings to documentation
+
         return inputBuffer, freqDict
 
     """ Count the number of occurrences of a given character in the input file for
@@ -160,7 +172,7 @@ class RelativeEntropy:
         self.logger.info('Relative Entropy: ' + str(relEntropy))
         return relEntropy
 
-    """ Calculates the Shannon Entropy for 
+    """ Calculates the Shannon Entropy for the given inputBuffer
     """
     def calcShanEntropy(self, inputBuffer):
         self.logger.info('Calculating Shannon Entropy.')
@@ -181,7 +193,7 @@ class RelativeEntropy:
 
             # Calculating the full entropy term
             if (inputRatio != 0.0):
-                entropyTerm = np.multiply(inputRatio, np.log2(inputRatio))
+                entropyTerm = -np.multiply(inputRatio, np.log2(inputRatio))
                 entropyDict[str(char)] = float(entropyTerm)
                 shanEntropy += entropyTerm
             else:
@@ -192,4 +204,4 @@ class RelativeEntropy:
         return shanEntropy
 
 
-relEntropy = RelativeEntropy()
+entCalc = EntropyCalculator()
