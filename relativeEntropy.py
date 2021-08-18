@@ -129,18 +129,32 @@ class RelativeEntropy:
 
         relEntropy = 0
         entropyDict = {}
+
+        # Calculating the entropy term for each unique character
         for char in freqDict.keys():
+
+            # Calculating the fraction of inputBuffer that is made up of
+            # the current unique character (p_i)
             inputRatio = float(inputBuffer.count(char)) \
                          / float(len(inputBuffer))
+
+            # Calculating the normalized proportion term (p_i/q_i)
             ratioTerm = np.divide(float(inputBuffer.count(char)), \
                         float(freqDict[char]))
+
+            # Calculating the full entropy term 
             if (ratioTerm != 0.0):
                 entropyTerm = np.multiply(inputRatio, \
                     np.log2(inputRatio / float(freqDict[char])))
                 entropyDict[str(char)] = float(entropyTerm)
+
+            # Handling cases where the unique character does not have a nonzero
+            # number of occurrences
             else:
-                entropyDict[str(char)] = 0.0
                 entropyTerm = 0
+                entropyDict[str(char)] = 0.0
+
+            # Summing the entropyTerm to the total Entropy
             relEntropy += entropyTerm
 
         self.logger.info('Relative Entropy: ' + str(relEntropy))
@@ -150,5 +164,32 @@ class RelativeEntropy:
     """
     def calcShanEntropy(self, inputBuffer):
         self.logger.info('Calculating Shannon Entropy.')
+
+        # Getting a list of all unique characters in the inputBuffer
+        charList = sorted(list(set(inputBuffer)))
+
+        shanEntropy = 0
+        entropyDict = {}
+
+        # Calculating the entropy term for each unique character
+        for char in charList:
+
+            # Calculating the fraction of inputBuffer that is made up of
+            # the current unique character (p_i)
+            inputRatio = float(inputBuffer.count(char)) \
+                         / float(len(inputBuffer))
+
+            # Calculating the full entropy term
+            if (inputRatio != 0.0):
+                entropyTerm = np.multiply(inputRatio, np.log2(inputRatio))
+                entropyDict[str(char)] = float(entropyTerm)
+                shanEntropy += entropyTerm
+            else:
+                entropyTerm = 0
+                entropyDict[str(char)] = 0.0
+
+        self.logger.info('Shannon Entropy: ' + str(shanEntropy))
+        return shanEntropy
+
 
 relEntropy = RelativeEntropy()
