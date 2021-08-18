@@ -29,7 +29,6 @@ class EntropyCalculator:
             parser.add_argument('inputFiles', metavar='inputFiles', nargs='+',
                                 help='Input files for which to calculate' \
                                 ' entropy')
-            # TODO: Add to documentation how baseline files should be formatted
             parser.add_argument('-b', '--baseline', default=None,
                                 help='The file containing the' \
                                 ' distribution to be used as the baseline for' \
@@ -113,7 +112,7 @@ class EntropyCalculator:
             self.logger.info('Input file successfully read.')
         else:
             self.logger.critical('Failed to read input file. Exiting.')
-            sys.exit(2)
+            sys.exit(1)
         if distFile is None:
             return inputFile
 
@@ -126,8 +125,7 @@ class EntropyCalculator:
             self.logger.info('Distribution file successfully read.')
         else:
             self.logger.critical('Failed to read distribution file. Exiting.')
-            sys.exit(3)
-            # TODO: Add exit codes and meanings to documentation
+            sys.exit(1)
 
         return inputBuffer, freqDict
 
