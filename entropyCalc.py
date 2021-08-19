@@ -149,7 +149,7 @@ class EntropyCalculator:
         
         # Reading the Input File
         inputBuffer = None
-        with open(inputFile, 'r') as inputF:
+        with open(inputFile, 'rb') as inputF:
             inputBuffer = inputF.read()
 
         if (inputBuffer is not None):

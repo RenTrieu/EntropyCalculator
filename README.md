@@ -105,5 +105,19 @@ Script failed to read a file
 Incorrect CLI usage
 
 ## Sources
+
+#### Conceptual References
 Built using Ben Downing's [Entropy Article](https://redcanary.com/blog/threat-hunting-entropy/)
 as a reference and for the example baseline distribution.
+
+#### Example References
+
+##### Hamlet
+The raw text for Hamlet was found [here](https://shakespeare.folger.edu/shakespeares-works/hamlet/download/).
+
+##### ILOVEYOU
+The raw text for the ILOVEYOU worm was found [here](http://www.cexx.org/loveletter.htm).
+
+##### Malicious Domains
+Malicious domains were taken from a [Fraudulent Sites Database](https://db.aa419.org/fakebankslist.php)
+and stripped of extraneous repetitive text such as ``http``, ``www``, and ``com``.
