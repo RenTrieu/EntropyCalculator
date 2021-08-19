@@ -185,35 +185,38 @@ class EntropyCalculator:
         probDict = {}
 
         # Removing characters not in freqDict from inputBuffer
-        bufferSet = set(inputBuffer)
-        freqSet = set(list(freqDict.keys()))
+        bufferSet = set([i.to_bytes(1, sys.byteorder) for i in inputBuffer])
+        freqList = [str.encode(freq) for freq in list(freqDict.keys())]
+        freqSet = set(freqList)
         missingChars = list(bufferSet.difference(freqSet))
 
         for missingChar in missingChars:
-            inputBuffer = inputBuffer.replace(str(missingChar), '')
+            inputBuffer = inputBuffer.replace(bytes(missingChar), b'')
 
         # Calculating the entropy term for each unique character
-        for char in freqDict.keys():
+        for charByte in freqList:
 
-            # Calculating the current unique character's probability p_i
-            inputRatio = float(inputBuffer.count(char)) \
+            charStr = charByte.decode('utf-8')
+
+            # Calculating the current unique charByteacter's probability p_i
+            inputRatio = float(inputBuffer.count(charByte)) \
                          / float(len(inputBuffer))
 
             # Calculating the normalized proportion term (p_i/q_i)
-            ratioTerm = np.divide(float(inputBuffer.count(char)), \
-                        float(freqDict[char]))
+            ratioTerm = np.divide(float(inputBuffer.count(charByte)), \
+                        float(freqDict[charStr]))
 
             # Calculating the full entropy term 
             if (ratioTerm != 0.0):
                 entropyTerm = np.multiply(inputRatio, \
-                    np.log2(inputRatio / float(freqDict[char])))
-                probDict[str(char)] = float(inputRatio)
+                    np.log2(inputRatio / float(freqDict[charStr])))
+                probDict[charStr] = float(inputRatio)
 
-            # Handling cases where the unique character does not have a nonzero
+            # Handling cases where the unique charByteacter does not have a nonzero
             # number of occurrences
             else:
                 entropyTerm = 0
-                probDict[str(char)] = 0.0
+                probDict[charStr] = 0.0
 
             # Summing the entropyTerm to the total Entropy
             relEntropy += entropyTerm
