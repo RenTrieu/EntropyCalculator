@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Program: EntropyCalculator 
 # Author: Darren Trieu Nguyen
-# Version: 1.1
+# Version: 1.2
 # Function: Takes in an arbitrary character frequency distribution to
 #           calculate the entropy of a given file
 
@@ -22,7 +22,7 @@ class EntropyCalculator:
     """
     def __init__(self):
         if __name__ == '__main__':
-            version = 1.1
+            version = 1.2
 
             # Parsing the CLI for options and parameters
             parser = argparse.ArgumentParser(
